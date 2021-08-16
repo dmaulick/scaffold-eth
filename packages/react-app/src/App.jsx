@@ -158,6 +158,8 @@ function App(props) {
   const addressFromENS = useResolveName(mainnetProvider, "austingriffith.eth");
   console.log("🏷 Resolved austingriffith.eth as:",addressFromENS)
   */
+
+  console.log('Error', localChainId, selectedChainId)
   let networkDisplay = ""
   if(localChainId && selectedChainId && localChainId != selectedChainId ){
     networkDisplay = (
@@ -166,7 +168,7 @@ function App(props) {
           message={"⚠️ Wrong Network"}
           description={(
             <div>
-              You have <b>{NETWORK(selectedChainId).name}</b> selected and you need to be on <b>{NETWORK(localChainId).name}</b>.
+              You have a network error.
             </div>
           )}
           type="error"
