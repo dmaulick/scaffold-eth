@@ -4,9 +4,7 @@ import React from "react";
 import { formatEther } from "@ethersproject/units";
 import { Address, AddressInput } from "../components";
 
-
-export default function Hints({yourLocalBalance, mainnetProvider, price, address }) {
-
+export default function Hints({ yourLocalBalance, mainnetProvider, price, address }) {
   return (
     <div>
       <div style={{ margin: 32 }}>
@@ -67,11 +65,11 @@ export default function Hints({yourLocalBalance, mainnetProvider, price, address
         <span style={{ margin: 4, backgroundColor: "#f9f9f9", padding: 4, borderRadius: 4, fontWeight: "bolder" }}>
           useBalance()
         </span>{" "}
-        hook keeps track of your balance: <b>{formatEther(yourLocalBalance?yourLocalBalance:0)}</b>
+        hook keeps track of your balance: <b>{formatEther(yourLocalBalance || 0)}</b>
       </div>
 
       <div style={{ marginTop: 32 }}>
-        as you build your app you'll need web3 specific components like an
+        as you build your app youll need web3 specific components like an
         <span style={{ margin: 4, backgroundColor: "#f9f9f9", padding: 4, borderRadius: 4, fontWeight: "bolder" }}>
           {"<AddressInput/>"}
         </span>
@@ -114,7 +112,6 @@ export default function Hints({yourLocalBalance, mainnetProvider, price, address
         </span>
       </div>
 
-
       <div style={{ marginTop: 32 }}>
         <span style={{ marginRight: 8 }}>🔑</span>
         <span style={{ marginLeft: 4, backgroundColor: "#f1f1f1", padding: 4, borderRadius: 4, fontWeight: "bolder" }}>
@@ -124,11 +121,16 @@ export default function Hints({yourLocalBalance, mainnetProvider, price, address
         <span style={{ marginLeft: 4, backgroundColor: "#f9f9f9", padding: 4, borderRadius: 4, fontWeight: "bolder" }}>
           packages/hardhat
         </span>
-        <div style={{marginTop:8}}>(use <span style={{ marginLeft: 4, backgroundColor: "#f1f1f1", padding: 4, borderRadius: 4, fontWeight: "bolder" }}>
+        <div style={{ marginTop: 8 }}>
+          (use{" "}
+          <span
+            style={{ marginLeft: 4, backgroundColor: "#f1f1f1", padding: 4, borderRadius: 4, fontWeight: "bolder" }}
+          >
             yarn run account
-          </span> to display deployer address and balance)</div>
+          </span>{" "}
+          to display deployer address and balance)
+        </div>
       </div>
-
 
       <div style={{ marginTop: 32 }}>
         <span style={{ marginRight: 8 }}>⚙️</span>
@@ -163,9 +165,7 @@ export default function Hints({yourLocalBalance, mainnetProvider, price, address
           </a>
         </span>
       </div>
-      <div style={{ padding: 128 }}>
-        🛠 Check out your browser's developer console for more... (inpect -> console) 🚀
-      </div>
+      <div style={{ padding: 128 }}>🛠 Check out your browsers developer console for more... (inpect - console) 🚀</div>
     </div>
   );
 }
