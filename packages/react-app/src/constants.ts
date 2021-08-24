@@ -285,15 +285,28 @@ export const DAI_ABI = [
   },
 ];
 
-export const NETWORK = chainId => {
-  for (const n in NETWORKS) {
-    if (NETWORKS[n].chainId == chainId) {
-      return NETWORKS[n];
+export const NETWORK = (chainId: number) => {
+  (Object.keys(NETWORKS) as ValidNetworkName[]).forEach((networkName: ValidNetworkName) => {
+    if (NETWORKS[networkName].chainId == chainId) {
+      return NETWORKS[networkName];
     }
-  }
+  })
 };
 
-export const NETWORKS = {
+type NetworkConfig = {
+  name: string;
+  color: string;
+  chainId: number;
+  blockExplorer: string;
+  rpcUrl: string;
+  faucet?: string;
+  price?: number;
+  gasPrice?: number;
+}
+
+export type ValidNetworkName = 'localhost' | 'mainnet' | 'kovan' | 'rinkeby' | 'ropsten' | 'goerli' | 'xdai' | 'matic';
+
+export const NETWORKS: Record<ValidNetworkName, NetworkConfig>  = {
   localhost: {
     name: "localhost",
     color: "#666666",

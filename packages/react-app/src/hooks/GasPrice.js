@@ -2,12 +2,13 @@ import { useState } from "react";
 import { usePoller } from "eth-hooks";
 import axios from "axios";
 
-export default function useGasPrice(targetNetwork,speed) {
+/* 🔥 This hook will get the price of Gas from ⛽️ EtherGasStation */
+export default function useGasPrice(targetNetwork, speed) {
   const [gasPrice, setGasPrice] = useState();
   const loadGasPrice = async () => {
-    if(targetNetwork.gasPrice){
+    if (targetNetwork.gasPrice) {
       setGasPrice(targetNetwork.gasPrice);
-    }else{
+    } else {
       axios
         .get("https://ethgasstation.info/json/ethgasAPI.json")
         .then(response => {

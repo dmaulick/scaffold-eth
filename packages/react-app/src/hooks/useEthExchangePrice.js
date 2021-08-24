@@ -2,7 +2,8 @@ import { useState } from "react";
 import { Token, WETH, Fetcher, Route } from "@uniswap/sdk";
 import { usePoller } from "eth-hooks";
 
-export default function useExchangePrice(targetNetwork, mainnetProvider, pollTime) {
+/* 💵 This hook will get the price of ETH from 🦄 Uniswap: */
+export default function useEthExchangePrice(targetNetwork, mainnetProvider, pollTime) {
   const [price, setPrice] = useState(0);
 
   const pollPrice = () => {

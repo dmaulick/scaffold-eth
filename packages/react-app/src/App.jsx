@@ -10,7 +10,7 @@ import WalletConnectProvider from "@walletconnect/web3-provider";
 import { useUserAddress } from "eth-hooks";
 import { formatEther, parseEther } from "@ethersproject/units";
 import {
-  useExchangePrice,
+  useEthExchangePrice,
   useGasPrice,
   useUserProvider,
   useContractLoader,
@@ -22,7 +22,7 @@ import {
 import { Header, Account, Faucet, Ramp, Contract, GasGauge, Balance, Address } from "./components";
 import { Transactor } from "./helpers";
 import { Hints, ExampleUI, Subgraph } from "./views";
-import { INFURA_ID, DAI_ADDRESS, DAI_ABI, NETWORK, NETWORKS } from "./constants";
+import { INFURA_ID, DAI_ADDRESS, NETWORKS } from "./constants";
 import { log, debugLog } from "./Dmaul/Logging";
 import { targetNetwork } from "./Dmaul/Config";
 
@@ -100,10 +100,9 @@ window.ethereum &&
 
 function App() {
   const [injectedProvider, setInjectedProvider] = useState();
-  /* 💵 This hook will get the price of ETH from 🦄 Uniswap: */
-  const price = useExchangePrice(targetNetwork, mainnetProvider);
 
-  /* 🔥 This hook will get the price of Gas from ⛽️ EtherGasStation */
+  const price = useEthExchangePrice(targetNetwork, mainnetProvider);
+
   const gasPrice = useGasPrice(targetNetwork, "fast");
   // Use your injected provider from 🦊 Metamask or if you don't have it then instantly generate a 🔥 burner wallet.
   const userProvider = useUserProvider(injectedProvider, localProvider);
@@ -424,6 +423,7 @@ function App() {
 
       <div style={{ marginTop: 32, opacity: 0.5 }}>
         <a
+          // eslint-disable-next-line react/jsx-no-target-blank
           target="_blank"
           style={{ padding: 32, color: "#000" }}
           href="https://github.com/austintgriffith/scaffold-eth"
