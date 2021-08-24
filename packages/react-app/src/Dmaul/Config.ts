@@ -1,7 +1,8 @@
 import { INFURA_ID, DAI_ADDRESS, DAI_ABI, NETWORK, NETWORKS } from "../constants";
 
 // 😬 Sorry for all the console logging
-export const DEBUG = true
+type LogLevel = 'none' | 'debug' | 'trace'; 
+export const LOG_LEVEL: LogLevel = 'debug'
 
 
 

@@ -69,7 +69,7 @@ const blockExplorer = targetNetwork.blockExplorer;
 */
 const web3Modal = new Web3Modal({
   // network: "mainnet", // optional
-  cacheProvider: true, // optional
+  cacheProvider: false, // optional
   providerOptions: {
     walletconnect: {
       package: WalletConnectProvider, // required

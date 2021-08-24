@@ -1,23 +1,25 @@
-import { DEBUG } from "./Config";
+import { LOG_LEVEL } from "./Config";
 
 export function log(...args: any[]) {
-  if (isLoggingEnabled()) {
+  console.log(...args);
+}
+
+export function debugLog(...args: any[]) {
+  if (LOG_LEVEL === 'debug') {
     console.log(...args);
   }
 }
 
-export function debugLog(...args: any[]) {
-  if (isLoggingEnabled()) {
+
+export function trace(...args: any[]) {
+  if (LOG_LEVEL === 'trace') {
     console.log(...args);
   }
 }
 
 export function logError(e: Error, ...args: any[]) {
-  if (isLoggingEnabled()) {
+  if (LOG_LEVEL === 'debug' || LOG_LEVEL === 'trace') {
     console.warn(...args, e.message);
   }
 }
 
-function isLoggingEnabled() {
-  return DEBUG;
-}
