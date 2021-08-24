@@ -13,6 +13,9 @@ import { Transactor } from "./helpers";
 import { formatEther, parseEther } from "@ethersproject/units";
 import { Hints, ExampleUI, Subgraph } from "./views"
 import { INFURA_ID, DAI_ADDRESS, DAI_ABI, NETWORK, NETWORKS } from "./constants";
+import { log, debugLog } from "./Dmaul/Logging"
+import { targetNetwork } from "./Dmaul/Config"
+
 const humanizeDuration = require("humanize-duration");
 /*
     Welcome to 🏗 scaffold-eth !
@@ -33,14 +36,8 @@ const humanizeDuration = require("humanize-duration");
     (and then use the `useExternalContractLoader()` hook!)
 */
 
-/// 📡 What chain are your contracts deployed to?
-const targetNetwork = NETWORKS['localhost']; // <------- select your target frontend network (localhost, rinkeby, xdai, mainnet)
-
-// 😬 Sorry for all the console logging
-const DEBUG = true
-
 // 🛰 providers
-if(DEBUG) console.log("📡 Connecting to Mainnet Ethereum");
+debugLog("📡 Connecting to Mainnet Ethereum");
 // const mainnetProvider = getDefaultProvider("mainnet", { infura: INFURA_ID, etherscan: ETHERSCAN_KEY, quorum: 1 });
 // const mainnetProvider = new InfuraProvider("mainnet",INFURA_ID);
 const mainnetProvider = new JsonRpcProvider("https://mainnet.infura.io/v3/" + INFURA_ID)
@@ -50,7 +47,7 @@ const mainnetProvider = new JsonRpcProvider("https://mainnet.infura.io/v3/" + IN
 const localProviderUrl = targetNetwork.rpcUrl;
 // as you deploy to other networks you can set REACT_APP_PROVIDER=https://dai.poa.network in packages/react-app/.env
 const localProviderUrlFromEnv = process.env.REACT_APP_PROVIDER ? process.env.REACT_APP_PROVIDER : localProviderUrl;
-if(DEBUG) console.log("🏠 Connecting to provider:", localProviderUrlFromEnv);
+debugLog("🏠 Connecting to provider:", localProviderUrlFromEnv);
 const localProvider = new JsonRpcProvider(localProviderUrlFromEnv);
 
 // 🔭 block explorer URL
@@ -67,14 +64,14 @@ function App(props) {
   // Use your injected provider from 🦊 Metamask or if you don't have it then instantly generate a 🔥 burner wallet.
   const userProvider = useUserProvider(injectedProvider, localProvider);
   const address = useUserAddress(userProvider);
-  if(DEBUG) console.log("👩‍💼 selected address:",address)
+  debugLog("👩‍💼 selected address:",address)
 
   // You can warn the user if you would like them to be on a specific network
   let localChainId = localProvider && localProvider._network && localProvider._network.chainId
-  if(DEBUG) console.log("🏠 localChainId",localChainId)
+  debugLog("🏠 localChainId",localChainId)
 
   let selectedChainId = userProvider && userProvider._network && userProvider._network.chainId
-  if(DEBUG) console.log("🕵🏻‍♂️ selectedChainId:",selectedChainId)
+  debugLog("🕵🏻‍♂️ selectedChainId:",selectedChainId)
 
   // For more hooks, check out 🔗eth-hooks at: https://www.npmjs.com/package/eth-hooks
 
@@ -86,25 +83,25 @@ function App(props) {
 
   // 🏗 scaffold-eth is full of handy hooks like this one to get your balance:
   const yourLocalBalance = useBalance(localProvider, address);
-  if(DEBUG) console.log("💵 yourLocalBalance",yourLocalBalance?formatEther(yourLocalBalance):"...")
+  debugLog("💵 yourLocalBalance",yourLocalBalance?formatEther(yourLocalBalance):"...")
 
   // Just plug in different 🛰 providers to get your balance on different chains:
   const yourMainnetBalance = useBalance(mainnetProvider, address);
-  if(DEBUG) console.log("💵 yourMainnetBalance",yourMainnetBalance?formatEther(yourMainnetBalance):"...")
+  debugLog("💵 yourMainnetBalance",yourMainnetBalance?formatEther(yourMainnetBalance):"...")
 
   // Load in your local 📝 contract and read a value from it:
   const readContracts = useContractLoader(localProvider)
-  if(DEBUG) console.log("📝 readContracts",readContracts)
+  debugLog("📝 readContracts",readContracts)
 
   // If you want to make 🔐 write transactions to your contracts, use the userProvider:
   const writeContracts = useContractLoader(userProvider)
-  if(DEBUG) console.log("🔐 writeContracts",writeContracts)
+  debugLog("🔐 writeContracts",writeContracts)
 
   // EXTERNAL CONTRACT EXAMPLE:
   //
   // If you want to bring in the mainnet DAI contract it would look like:
   //const mainnetDAIContract = useExternalContractLoader(mainnetProvider, DAI_ADDRESS, DAI_ABI)
-  //console.log("🥇DAI contract on mainnet:",mainnetDAIContract)
+  //log("🥇DAI contract on mainnet:",mainnetDAIContract)
   //
   // Then read your DAI balance like:
   //const myMainnetBalance = useContractReader({DAI: mainnetDAIContract},"DAI", "balanceOf",["0x34aA3F359A9D614239015126635CE7732c18fDF3"])
@@ -112,31 +109,31 @@ function App(props) {
 
   //keep track of contract balance to know how much has been staked total:
   const stakerContractBalance = useBalance(localProvider, readContracts && readContracts.Staker.address);
-  if(DEBUG) console.log("💵 stakerContractBalance", stakerContractBalance )
+  debugLog("💵 stakerContractBalance", stakerContractBalance )
 
   //keep track of total 'threshold' needed of ETH
   const threshold = useContractReader(readContracts,"Staker", "threshold" )
-  console.log("💵 threshold:",threshold)
+  log("💵 threshold:",threshold)
 
   // keep track of a variable from the contract in the local React state:
   const balanceStaked = useContractReader(readContracts,"Staker", "balances",[ address ])
-  console.log("💸 balanceStaked:",balanceStaked)
+  log("💸 balanceStaked:",balanceStaked)
 
   //📟 Listen for broadcast events
   const stakeEvents = useEventListener(readContracts, "Staker", "Stake", localProvider, 1);
-  console.log("📟 stake events:",stakeEvents)
+  log("📟 stake events:",stakeEvents)
 
   // keep track of a variable from the contract in the local React state:
   const timeLeft = useContractReader(readContracts,"Staker", "timeLeft")
-  console.log("⏳ timeLeft:",timeLeft)
+  log("⏳ timeLeft:",timeLeft)
 
 
 
   const complete = useContractReader(readContracts,"ExampleExternalContract", "completed")
-  console.log("✅ complete:",complete)
+  log("✅ complete:",complete)
 
   const exampleExternalContractBalance = useBalance(localProvider, readContracts && readContracts.ExampleExternalContract.address);
-  if(DEBUG) console.log("💵 exampleExternalContractBalance", exampleExternalContractBalance )
+  debugLog("💵 exampleExternalContractBalance", exampleExternalContractBalance )
 
 
   let completeDisplay = ""
@@ -156,10 +153,10 @@ function App(props) {
 
   /*
   const addressFromENS = useResolveName(mainnetProvider, "austingriffith.eth");
-  console.log("🏷 Resolved austingriffith.eth as:",addressFromENS)
+  log("🏷 Resolved austingriffith.eth as:",addressFromENS)
   */
 
-  console.log('Error', localChainId, selectedChainId)
+  log('Error', localChainId, selectedChainId)
   let networkDisplay = ""
   if(localChainId && selectedChainId && localChainId != selectedChainId ){
     networkDisplay = (
