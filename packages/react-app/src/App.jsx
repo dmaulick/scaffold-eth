@@ -5,8 +5,6 @@ import "antd/dist/antd.css";
 import { JsonRpcProvider, Web3Provider } from "@ethersproject/providers";
 import "./App.css";
 import { Row, Col, Button, Menu, Alert, List } from "antd";
-import Web3Modal from "web3modal";
-import WalletConnectProvider from "@walletconnect/web3-provider";
 import { useUserAddress } from "eth-hooks";
 import { formatEther, parseEther } from "@ethersproject/units";
 import {
@@ -22,9 +20,10 @@ import {
 import { Header, Account, Faucet, Ramp, Contract, GasGauge, Balance, Address } from "./components";
 import { Transactor } from "./helpers";
 import { Hints, ExampleUI, Subgraph } from "./views";
-import { INFURA_ID, DAI_ADDRESS, NETWORKS } from "./constants";
-import { log, debugLog } from "./Dmaul/Logging";
-import { targetNetwork } from "./Dmaul/Config";
+import { INFURA_ID, DAI_ADDRESS, NETWORKS } from "./constants.ts";
+import { log, debugLog, trace } from "./Dmaul/Logging.ts";
+import { targetNetwork } from "./Dmaul/Config.ts";
+import { web3Modal, logoutOfWeb3Modal } from "./Dmaul/Web3Modal.ts";
 
 const humanizeDuration = require("humanize-duration");
 /*
@@ -48,15 +47,13 @@ const humanizeDuration = require("humanize-duration");
 
 // 🛰 providers
 debugLog("📡 Connecting to Mainnet Ethereum");
-// const mainnetProvider = getDefaultProvider("mainnet", { infura: INFURA_ID, etherscan: ETHERSCAN_KEY, quorum: 1 });
-// const mainnetProvider = new InfuraProvider("mainnet",INFURA_ID);
-const mainnetProvider = new JsonRpcProvider("https://mainnet.infura.io/v3/" + INFURA_ID);
-// ( ⚠️ Getting "failed to meet quorum" errors? Check your INFURA_ID)
+const mainnetProvider = new JsonRpcProvider("https://mainnet.infura.io/v3/" + INFURA_ID); // ( ⚠️ Getting "failed to meet quorum" errors? Check your INFURA_ID)
 
-// 🏠 Your local provider is usually pointed at your local blockchain
-const localProviderUrl = targetNetwork.rpcUrl;
-// as you deploy to other networks you can set REACT_APP_PROVIDER=https://dai.poa.network in packages/react-app/.env
-const localProviderUrlFromEnv = process.env.REACT_APP_PROVIDER ? process.env.REACT_APP_PROVIDER : localProviderUrl;
+debugLog("📡 Connecting to Local Ethereum");
+const localProviderUrl = targetNetwork.rpcUrl; // 🏠 Your local provider is usually pointed at your local blockchain
+
+trace("📡 Connecting to Local env provided Network");
+const localProviderUrlFromEnv = process.env.REACT_APP_PROVIDER ? process.env.REACT_APP_PROVIDER : localProviderUrl; // as you deploy to other networks you can set REACT_APP_PROVIDER=https://dai.poa.network in packages/react-app/.env
 debugLog("🏠 Connecting to provider:", localProviderUrlFromEnv);
 const localProvider = new JsonRpcProvider(localProviderUrlFromEnv);
 
@@ -64,28 +61,6 @@ const localProvider = new JsonRpcProvider(localProviderUrlFromEnv);
 const blockExplorer = targetNetwork.blockExplorer;
 
 // --------------- Moved from Bottom ------------------------
-/*
-  Web3 modal helps us "connect" external wallets:
-*/
-const web3Modal = new Web3Modal({
-  // network: "mainnet", // optional
-  cacheProvider: false, // optional
-  providerOptions: {
-    walletconnect: {
-      package: WalletConnectProvider, // required
-      options: {
-        infuraId: INFURA_ID,
-      },
-    },
-  },
-});
-
-const logoutOfWeb3Modal = async () => {
-  await web3Modal.clearCachedProvider();
-  setTimeout(() => {
-    window.location.reload();
-  }, 1);
-};
 
 // eslint-disable-next-line no-unused-expressions
 window.ethereum &&
