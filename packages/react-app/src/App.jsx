@@ -1,5 +1,5 @@
 /* eslint-disable no-underscore-dangle */
-import React, { useCallback, useEffect, useState } from "react";
+import React, { useCallback, useEffect, useMemo, useState } from "react";
 import { BrowserRouter, Switch, Route, Link } from "react-router-dom";
 import "antd/dist/antd.css";
 import { JsonRpcProvider, Web3Provider } from "@ethersproject/providers";
@@ -206,33 +206,36 @@ function App() {
     setRoute(window.location.pathname);
   }, [setRoute]);
 
-  let faucetHint = "";
   const [faucetClicked, setFaucetClicked] = useState(false);
-  if (
-    !faucetClicked &&
-    localProvider &&
-    localProvider._network &&
-    localProvider._network.chainId === 31337 &&
-    yourLocalBalance &&
-    formatEther(yourLocalBalance) <= 0
-  ) {
-    faucetHint = (
-      <div style={{ padding: 16 }}>
-        <Button
-          type="primary"
-          onClick={() => {
-            faucetTx({
-              to: address,
-              value: parseEther("0.01"),
-            });
-            setFaucetClicked(true);
-          }}
-        >
-          💰 Grab funds from the faucet ⛽️
-        </Button>
-      </div>
-    );
-  }
+
+  const faucetHint = useMemo(() => {
+    if (
+      !faucetClicked &&
+      localProvider &&
+      localProvider._network &&
+      localProvider._network.chainId === 31337 &&
+      yourLocalBalance &&
+      formatEther(yourLocalBalance) <= 0
+    ) {
+      return (
+        <div style={{ padding: 16 }}>
+          <Button
+            type="primary"
+            onClick={() => {
+              faucetTx({
+                to: address,
+                value: parseEther("0.01"),
+              });
+              setFaucetClicked(true);
+            }}
+          >
+            💰 Grab funds from the faucet ⛽️
+          </Button>
+        </div>
+      );
+    }
+    return "";
+  }, [address, faucetClicked, faucetTx, yourLocalBalance]);
 
   return (
     <div className="App">

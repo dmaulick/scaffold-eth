@@ -1,22 +1,26 @@
-import React, { useState } from "react";
+import React, { useState, useMemo } from "react";
 import { Input, Button, Tooltip } from "antd";
 import Blockies from "react-blockies";
 import { SendOutlined } from "@ant-design/icons";
 import { parseEther } from "@ethersproject/units";
 import { Transactor } from "../helpers";
 import Wallet from "./Wallet";
+import { JsonRpcProvider } from "@ethersproject/providers/lib/json-rpc-provider";
 
-export default function Faucet(props) {
-  const [address, setAddress] = useState();
+interface FaucetProps {
+  localProvider: JsonRpcProvider;
+  ensProvider: JsonRpcProvider;
+  price: number;
+}
 
-  let blockie;
-  if (address && typeof address.toLowerCase === "function") {
-    blockie = <Blockies seed={address.toLowerCase()} size={8} scale={4} />;
-  } else {
-    blockie = <div />;
-  }
+export default function Faucet({ localProvider, ensProvider, price }: FaucetProps) {
+  const [address, setAddress] = useState<string | undefined>();
 
-  const tx = Transactor(props.localProvider);
+  const blockie = useMemo(() => {
+    return address ? <Blockies seed={address} size={8} scale={4} /> : <div />;
+  }, [address])
+
+  const tx = useMemo(() => (Transactor(localProvider)), [localProvider])
 
   return (
     <span>
@@ -32,7 +36,7 @@ export default function Faucet(props) {
           <Tooltip title="Faucet: Send local ether to an address.">
             <Button
               onClick={() => {
-                tx({
+                tx?.({
                   to: address,
                   value: parseEther("0.01"),
                 });
@@ -41,7 +45,12 @@ export default function Faucet(props) {
               shape="circle"
               icon={<SendOutlined />}
             />
-            <Wallet color="#888888" provider={props.localProvider} ensProvider={props.ensProvider} price={props.price} />
+            <Wallet
+              color="#888888"
+              provider={localProvider}
+              ensProvider={ensProvider}
+              price={price}
+            />
           </Tooltip>
         }
       />
