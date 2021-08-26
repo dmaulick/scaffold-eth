@@ -15,7 +15,7 @@ export default function FunctionForm({ contractFunction, functionInfo, provider,
   const [txValue, setTxValue] = useState();
   const [returnValue, setReturnValue] = useState();
 
-  const tx = Transactor(provider, gasPrice);
+  const tx = Transactor({ provider, gasPrice });
 
   let inputIndex = 0;
   const inputs = functionInfo.inputs.map(input => {

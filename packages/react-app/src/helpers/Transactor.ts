@@ -1,26 +1,33 @@
 import { hexlify } from "@ethersproject/bytes";
+import { JsonRpcProvider } from "@ethersproject/providers/lib/json-rpc-provider";
 import { parseUnits } from "@ethersproject/units";
 import { notification } from "antd";
 
-import Notify from "bnc-notify";
+import Notify, { InitOptions } from "bnc-notify";
 
 // this should probably just be renamed to "notifier"
 // it is basically just a wrapper around BlockNative's wonderful Notify.js
 // https://docs.blocknative.com/notify
 
-export default function Transactor(provider, gasPrice, etherscan) {
+interface useTransactorProps {
+  provider: JsonRpcProvider;
+  gasPrice?: number;
+  etherscan?: any;
+}
+
+export function Transactor({provider, gasPrice, etherscan}: useTransactorProps) {
   if (typeof provider !== "undefined") {
     // eslint-disable-next-line consistent-return
-    return async tx => {
+    return async (tx: any) => {
       const signer = provider.getSigner();
       const network = await provider.getNetwork();
       console.log("network", network);
-      const options = {
+      const options: InitOptions = {
         dappId: "0b58206a-f3c0-4701-a62f-73c7243e8c77", // GET YOUR OWN KEY AT https://account.blocknative.com
         system: "ethereum",
         networkId: network.chainId,
         // darkMode: Boolean, // (default: false)
-        transactionHandler: txInformation => {
+        transactionHandler: (txInformation: any) => {
           console.log("HANDLE TX", txInformation);
         },
       };
@@ -73,11 +80,14 @@ export default function Transactor(provider, gasPrice, etherscan) {
         return result;
       } catch (e) {
         console.log(e);
-        console.log("Transaction Error:", e.message);
-        notification.error({
-          message: "Transaction Error",
-          description: e.message,
-        });
+        if ((e as Error).message !== undefined) {
+          console.log("Transaction Error:", (e as Error).message);
+          notification.error({
+            message: "Transaction Error",
+            description: (e as Error).message,
+          });
+        }
+        
       }
     };
   }

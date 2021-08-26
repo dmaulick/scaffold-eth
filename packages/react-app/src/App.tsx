@@ -74,10 +74,34 @@ function App() {
   debugLog("👩‍💼 selected address:", address);
 
   // ** For more hooks, check out 🔗eth-hooks at: https://www.npmjs.com/package/eth-hooks
-  const tx = Transactor(userProvider, gasPrice); // The transactor wraps transactions and provides notificiations
+  const tx = Transactor({provider: userProvider, gasPrice}); // The transactor wraps transactions and provides notificiations
 
-  const faucetTx = Transactor(localProvider, gasPrice); // Faucet Tx can be used to send funds from the faucet
+  const faucetTx = Transactor({provider: localProvider, gasPrice}); // Faucet Tx can be used to send funds from the faucet
 
+
+  useEffect(() => {
+    console.log('TEST RENDERS - price')
+  }, [price])
+
+    useEffect(() => {
+      console.log('TEST RENDERS - gasPrice')
+    }, [gasPrice])
+
+  useEffect(() => {
+    console.log('TEST RENDERS - userProvider')
+  }, [userProvider])
+
+  useEffect(() => {
+    console.log('TEST RENDERS - address')
+  }, [address])
+
+  useEffect(() => {
+    console.log('TEST RENDERS - tx')
+  }, [tx])
+
+  // useEffect(() => {
+  //   console.log('TEST RENDERS - faucetTx')
+  // }, [faucetTx])
 
   // Just plug in different 🛰 providers to get your balance on different chains:
   const yourLocalBalance = useBalance({ provider: localProvider, address });

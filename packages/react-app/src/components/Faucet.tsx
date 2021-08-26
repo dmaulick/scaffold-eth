@@ -20,7 +20,7 @@ export default function Faucet({ localProvider, ensProvider, price }: FaucetProp
     return address ? <Blockies seed={address} size={8} scale={4} /> : <div />;
   }, [address])
 
-  const tx = useMemo(() => (Transactor(localProvider)), [localProvider])
+  const tx = useMemo(() => (Transactor({provider: localProvider})), [localProvider])
 
   return (
     <span>
