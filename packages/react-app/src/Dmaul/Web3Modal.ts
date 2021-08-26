@@ -7,7 +7,7 @@ import { INFURA_ID } from "../constants";
 */
 export const web3Modal = new Web3Modal({
   // network: "mainnet", // optional
-  cacheProvider: false, // optional
+  cacheProvider: true, // optional
   providerOptions: {
     walletconnect: {
       package: WalletConnectProvider, // required

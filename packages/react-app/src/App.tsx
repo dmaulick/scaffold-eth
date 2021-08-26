@@ -24,11 +24,11 @@ import { Transactor } from "./helpers";
 // eslint-disable-next-line no-unused-vars
 import { Hints, ExampleUI, Subgraph } from "./views";
 // eslint-disable-next-line no-unused-vars
-import { INFURA_ID, DAI_ADDRESS, NETWORKS } from "./constants.ts";
-import { log, debugLog, logError } from "./Dmaul/Logging.ts";
-import { targetNetwork } from "./Dmaul/Config.ts";
-import { web3Modal, logoutOfWeb3Modal } from "./Dmaul/Web3Modal.ts";
-import { mainnetProvider, localProvider, blockExplorer } from "./Dmaul/Web3Init.ts";
+import { INFURA_ID, DAI_ADDRESS, NETWORKS } from "./constants";
+import { log, debugLog, logError } from "./Dmaul/Logging";
+import { targetNetwork } from "./Dmaul/Config";
+import { web3Modal, logoutOfWeb3Modal } from "./Dmaul/Web3Modal";
+import { mainnetProvider, localProvider, blockExplorer } from "./Dmaul/Web3Init";
 
 const humanizeDuration = require("humanize-duration");
 /*
@@ -64,7 +64,7 @@ window.ethereum &&
 // ---------------------------------------------------------------------------------------------
 
 function App() {
-  const [injectedProvider, setInjectedProvider] = useState();
+  const [injectedProvider, setInjectedProvider] = useState<Web3Provider>();
 
   const price = useEthExchangePrice(targetNetwork, mainnetProvider);
 
@@ -74,28 +74,23 @@ function App() {
   const address = useUserAddress(userProvider);
   debugLog("👩‍💼 selected address:", address);
 
-  // For more hooks, check out 🔗eth-hooks at: https://www.npmjs.com/package/eth-hooks
+  // ** For more hooks, check out 🔗eth-hooks at: https://www.npmjs.com/package/eth-hooks
+  const tx = Transactor(userProvider, gasPrice); // The transactor wraps transactions and provides notificiations
 
-  // The transactor wraps transactions and provides notificiations
-  const tx = Transactor(userProvider, gasPrice);
+  const faucetTx = Transactor(localProvider, gasPrice); // Faucet Tx can be used to send funds from the faucet
 
-  // Faucet Tx can be used to send funds from the faucet
-  const faucetTx = Transactor(localProvider, gasPrice);
-
-  // 🏗 scaffold-eth is full of handy hooks like this one to get your balance:
-  const yourLocalBalance = useBalance(localProvider, address);
-  debugLog("💵 yourLocalBalance", yourLocalBalance ? formatEther(yourLocalBalance) : "...");
 
   // Just plug in different 🛰 providers to get your balance on different chains:
-  const yourMainnetBalance = useBalance(mainnetProvider, address);
+  const yourLocalBalance = useBalance({ provider: localProvider, address });
+  const yourMainnetBalance = useBalance({ provider: mainnetProvider, address });
+  debugLog("💵 yourLocalBalance", yourLocalBalance ? formatEther(yourLocalBalance) : "...");
   debugLog("💵 yourMainnetBalance", yourMainnetBalance ? formatEther(yourMainnetBalance) : "...");
 
   // Load in your local 📝 contract and read a value from it:
   const readContracts = useContractLoader(localProvider);
-  debugLog("📝 readContracts", readContracts);
-
   // If you want to make 🔐 write transactions to your contracts, use the userProvider:
   const writeContracts = useContractLoader(userProvider);
+  debugLog("📝 readContracts", readContracts);
   debugLog("🔐 writeContracts", writeContracts);
 
   // EXTERNAL CONTRACT EXAMPLE:
@@ -108,44 +103,48 @@ function App() {
   // const myMainnetBalance = useContractReader({DAI: mainnetDAIContract},"DAI", "balanceOf",["0x34aA3F359A9D614239015126635CE7732c18fDF3"])
   //
 
-  // keep track of contract balance to know how much has been staked total:
-  const stakerContractBalance = useBalance(localProvider, readContracts && readContracts.Staker.address);
-  debugLog("💵 stakerContractBalance", stakerContractBalance);
 
+  // INVESTIGATE STAKER SMART CONTRACT STATE:
+
+  // keep track of contract balance to know how much has been staked total:
+  const stakerContractBalance = useBalance({provider: localProvider, address: readContracts && readContracts.Staker.address});
   // keep track of total 'threshold' needed of ETH
   const threshold = useContractReader(readContracts, "Staker", "threshold");
-  log("💵 threshold:", threshold);
-
   // keep track of a variable from the contract in the local React state:
   const balanceStaked = useContractReader(readContracts, "Staker", "balances", [address]);
-  log("💸 balanceStaked:", balanceStaked);
-
   // 📟 Listen for broadcast events
   const stakeEvents = useEventListener(readContracts, "Staker", "Stake", localProvider, 1);
-  log("📟 stake events:", stakeEvents);
-
   // keep track of a variable from the contract in the local React state:
   const timeLeft = useContractReader(readContracts, "Staker", "timeLeft");
-  log("⏳ timeLeft:", timeLeft);
-
+  // check to see if contract has completed:
   const complete = useContractReader(readContracts, "ExampleExternalContract", "completed");
-  log("✅ complete:", complete);
+  // check balance of example external contract
+  const exampleExternalContractBalance = useBalance({
+    provider: localProvider,
+    address: readContracts && readContracts.ExampleExternalContract.address,
+  });
 
-  const exampleExternalContractBalance = useBalance(
-    localProvider,
-    readContracts && readContracts.ExampleExternalContract.address,
-  );
+  debugLog("💵 stakerContractBalance", stakerContractBalance);
+  log("💵 threshold:", threshold);
+  log("💸 balanceStaked:", balanceStaked);
+  log("📟 stake events:", stakeEvents);
+  log("⏳ timeLeft:", timeLeft);
+  log("✅ complete:", complete);
   debugLog("💵 exampleExternalContractBalance", exampleExternalContractBalance);
 
-  let completeDisplay = "";
-  if (complete) {
-    completeDisplay = (
-      <div style={{ padding: 64, backgroundColor: "#eeffef", fontWeight: "bolder" }}>
-        🚀 🎖 👩‍🚀 - Staking App triggered `ExampleExternalContract` -- 🎉 🍾 🎊
-        <Balance balance={exampleExternalContractBalance} fontSize={64} /> ETH staked!
-      </div>
-    );
-  }
+
+  const completeDisplay = useMemo(() => {
+    if (complete) {
+      return (
+        <div style={{ padding: 64, backgroundColor: "#eeffef", fontWeight: "bolder" }}>
+          🚀 🎖 👩‍🚀 - Staking App triggered `ExampleExternalContract` -- 🎉 🍾 🎊
+          <Balance balance={exampleExternalContractBalance} fontSize={64} /> ETH staked!
+        </div>
+      );
+    } else {
+      return "";
+    }
+  }, []);
 
   /*
   const addressFromENS = useResolveName(mainnetProvider, "austingriffith.eth");
@@ -154,7 +153,8 @@ function App() {
 
   const loadWeb3Modal = useCallback(async () => {
     const provider = await web3Modal.connect();
-    setInjectedProvider(new Web3Provider(provider));
+    const web3Provider = new Web3Provider(provider)
+    setInjectedProvider(web3Provider);
   }, [setInjectedProvider]);
 
   useEffect(() => {
@@ -163,7 +163,7 @@ function App() {
     }
   }, [loadWeb3Modal]);
 
-  const [route, setRoute] = useState();
+  const [route, setRoute] = useState<string>();
   useEffect(() => {
     setRoute(window.location.pathname);
   }, [setRoute]);
@@ -177,14 +177,14 @@ function App() {
       localProvider._network &&
       localProvider._network.chainId === 31337 &&
       yourLocalBalance &&
-      formatEther(yourLocalBalance) <= 0
+      parseInt(formatEther(yourLocalBalance)) <= 0
     ) {
       return (
         <div style={{ padding: 16 }}>
           <Button
             type="primary"
             onClick={() => {
-              faucetTx({
+              faucetTx?.({
                 to: address,
                 value: parseEther("0.01"),
               });
@@ -205,7 +205,7 @@ function App() {
       <Header />
       <NetworkDisplay selectedChainId={userProvider?._network?.chainId} localChainId={localProvider?._network?.chainId} />
       <BrowserRouter>
-        <Menu style={{ textAlign: "center" }} selectedKeys={[route]} mode="horizontal">
+        <Menu style={{ textAlign: "center" }} selectedKeys={route ? [route]: undefined} mode="horizontal">
           <Menu.Item key="/">
             <Link
               onClick={() => {
@@ -251,7 +251,7 @@ function App() {
               <Button
                 type="default"
                 onClick={() => {
-                  tx(writeContracts.Staker.execute());
+                  tx?.(writeContracts.Staker.execute());
                 }}
               >
                 📡 Execute!
@@ -262,7 +262,7 @@ function App() {
               <Button
                 type="default"
                 onClick={() => {
-                  tx(writeContracts.Staker.withdraw(address));
+                  tx?.(writeContracts.Staker.withdraw(address));
                 }}
               >
                 🏧 Withdraw
@@ -271,9 +271,9 @@ function App() {
 
             <div style={{ padding: 8 }}>
               <Button
-                type={balanceStaked ? "success" : "primary"}
+                type={balanceStaked ? "primary" : "dashed" }
                 onClick={() => {
-                  tx(writeContracts.Staker.stake({ value: parseEther("0.5") }));
+                  tx?.(writeContracts.Staker.stake({ value: parseEther("0.5") }));
                 }}
               >
                 🥩 Stake 0.5 ether!
