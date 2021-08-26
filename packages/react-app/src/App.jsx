@@ -2,11 +2,12 @@
 import React, { useCallback, useEffect, useMemo, useState } from "react";
 import { BrowserRouter, Switch, Route, Link } from "react-router-dom";
 import "antd/dist/antd.css";
-import { JsonRpcProvider, Web3Provider } from "@ethersproject/providers";
+import { Web3Provider } from "@ethersproject/providers";
 import "./App.css";
 import { Row, Col, Button, Menu, Alert, List } from "antd";
 import { useUserAddress } from "eth-hooks";
 import { formatEther, parseEther } from "@ethersproject/units";
+import { NetworkDisplay } from "./Dmaul/NetworkDisplay";
 import {
   useEthExchangePrice,
   useGasPrice,
@@ -24,9 +25,10 @@ import { Transactor } from "./helpers";
 import { Hints, ExampleUI, Subgraph } from "./views";
 // eslint-disable-next-line no-unused-vars
 import { INFURA_ID, DAI_ADDRESS, NETWORKS } from "./constants.ts";
-import { log, debugLog, trace } from "./Dmaul/Logging.ts";
+import { log, debugLog, logError } from "./Dmaul/Logging.ts";
 import { targetNetwork } from "./Dmaul/Config.ts";
 import { web3Modal, logoutOfWeb3Modal } from "./Dmaul/Web3Modal.ts";
+import { mainnetProvider, localProvider, blockExplorer } from "./Dmaul/Web3Init.ts";
 
 const humanizeDuration = require("humanize-duration");
 /*
@@ -48,22 +50,7 @@ const humanizeDuration = require("humanize-duration");
     (and then use the `useExternalContractLoader()` hook!)
 */
 
-// 🛰 providers
-debugLog("📡 Connecting to Mainnet Ethereum");
-const mainnetProvider = new JsonRpcProvider("https://mainnet.infura.io/v3/" + INFURA_ID); // ( ⚠️ Getting "failed to meet quorum" errors? Check your INFURA_ID)
-
-debugLog("📡 Connecting to Local Ethereum");
-const localProviderUrl = targetNetwork.rpcUrl; // 🏠 Your local provider is usually pointed at your local blockchain
-
-trace("📡 Connecting to Local env provided Network");
-const localProviderUrlFromEnv = process.env.REACT_APP_PROVIDER ? process.env.REACT_APP_PROVIDER : localProviderUrl; // as you deploy to other networks you can set REACT_APP_PROVIDER=https://dai.poa.network in packages/react-app/.env
-debugLog("🏠 Connecting to provider:", localProviderUrlFromEnv);
-const localProvider = new JsonRpcProvider(localProviderUrlFromEnv);
-
-// 🔭 block explorer URL
-const blockExplorer = targetNetwork.blockExplorer;
-
-// --------------- Moved from Bottom ------------------------
+// --------------- Moved from Bottom of app.jsx -- not sure what its for yet ------------------------
 
 // eslint-disable-next-line no-unused-expressions
 window.ethereum &&
@@ -74,7 +61,7 @@ window.ethereum &&
     }, 1);
   });
 
-// --------------- ^ Moved from Bottom ------------------------
+// ---------------------------------------------------------------------------------------------
 
 function App() {
   const [injectedProvider, setInjectedProvider] = useState();
@@ -86,13 +73,6 @@ function App() {
   const userProvider = useUserProvider(injectedProvider, localProvider);
   const address = useUserAddress(userProvider);
   debugLog("👩‍💼 selected address:", address);
-
-  // You can warn the user if you would like them to be on a specific network
-  const localChainId = localProvider && localProvider._network && localProvider._network.chainId;
-  debugLog("🏠 localChainId", localChainId);
-
-  const selectedChainId = userProvider && userProvider._network && userProvider._network.chainId;
-  debugLog("🕵🏻‍♂️ selectedChainId:", selectedChainId);
 
   // For more hooks, check out 🔗eth-hooks at: https://www.npmjs.com/package/eth-hooks
 
@@ -172,27 +152,6 @@ function App() {
   log("🏷 Resolved austingriffith.eth as:",addressFromENS)
   */
 
-  log("Error", localChainId, selectedChainId);
-  let networkDisplay = "";
-  if (localChainId && selectedChainId && localChainId !== selectedChainId) {
-    networkDisplay = (
-      <div style={{ zIndex: 2, position: "absolute", right: 0, top: 60, padding: 16 }}>
-        <Alert
-          message="⚠️ Wrong Network"
-          description={<div>You have a network error.</div>}
-          type="error"
-          closable={false}
-        />
-      </div>
-    );
-  } else {
-    networkDisplay = (
-      <div style={{ zIndex: 2, position: "absolute", right: 154, top: 28, padding: 16, color: targetNetwork.color }}>
-        {targetNetwork.name}
-      </div>
-    );
-  }
-
   const loadWeb3Modal = useCallback(async () => {
     const provider = await web3Modal.connect();
     setInjectedProvider(new Web3Provider(provider));
@@ -244,7 +203,7 @@ function App() {
     <div className="App">
       {/* ✏️ Edit the header and change the title to your project name */}
       <Header />
-      {networkDisplay}
+      <NetworkDisplay selectedChainId={userProvider?._network?.chainId} localChainId={localProvider?._network?.chainId} />
       <BrowserRouter>
         <Menu style={{ textAlign: "center" }} selectedKeys={[route]} mode="horizontal">
           <Menu.Item key="/">
