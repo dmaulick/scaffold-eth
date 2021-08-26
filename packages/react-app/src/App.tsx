@@ -54,8 +54,7 @@ const humanizeDuration = require("humanize-duration");
 
 // eslint-disable-next-line no-unused-expressions
 window.ethereum &&
-  // eslint-disable-next-line no-unused-vars
-  window.ethereum.on("chainChanged", chainId => {
+  window.ethereum.on("chainChanged", () => {
     setTimeout(() => {
       window.location.reload();
     }, 1);
@@ -109,15 +108,15 @@ function App() {
   // keep track of contract balance to know how much has been staked total:
   const stakerContractBalance = useBalance({provider: localProvider, address: readContracts && readContracts.Staker.address});
   // keep track of total 'threshold' needed of ETH
-  const threshold = useContractReader(readContracts, "Staker", "threshold");
+  const threshold = useContractReader({ contracts: readContracts, contractName: "Staker", functionName: "threshold" });
   // keep track of a variable from the contract in the local React state:
-  const balanceStaked = useContractReader(readContracts, "Staker", "balances", [address]);
+  const balanceStaked = useContractReader({ contracts: readContracts, contractName: "Staker", functionName: "balances", args: [address]});
   // 📟 Listen for broadcast events
   const stakeEvents = useEventListener(readContracts, "Staker", "Stake", localProvider, 1);
   // keep track of a variable from the contract in the local React state:
-  const timeLeft = useContractReader(readContracts, "Staker", "timeLeft");
+  const timeLeft = useContractReader({ contracts: readContracts, contractName: "Staker", functionName: "timeLeft" });
   // check to see if contract has completed:
-  const complete = useContractReader(readContracts, "ExampleExternalContract", "completed");
+  const complete = useContractReader({ contracts: readContracts, contractName: "ExampleExternalContract", functionName: "completed"});
   // check balance of example external contract
   const exampleExternalContractBalance = useBalance({
     provider: localProvider,
@@ -251,7 +250,7 @@ function App() {
               <Button
                 type="default"
                 onClick={() => {
-                  tx?.(writeContracts.Staker.execute());
+                  tx?.(writeContracts?.Staker.execute());
                 }}
               >
                 📡 Execute!
@@ -262,7 +261,7 @@ function App() {
               <Button
                 type="default"
                 onClick={() => {
-                  tx?.(writeContracts.Staker.withdraw(address));
+                  tx?.(writeContracts?.Staker.withdraw(address));
                 }}
               >
                 🏧 Withdraw
@@ -273,7 +272,7 @@ function App() {
               <Button
                 type={balanceStaked ? "primary" : "dashed" }
                 onClick={() => {
-                  tx?.(writeContracts.Staker.stake({ value: parseEther("0.5") }));
+                  tx?.(writeContracts?.Staker.stake({ value: parseEther("0.5") }));
                 }}
               >
                 🥩 Stake 0.5 ether!
@@ -290,14 +289,13 @@ function App() {
               <div>Stake Events:</div>
               <List
                 dataSource={stakeEvents}
-                renderItem={item => {
-                  return (
-                    <List.Item key={item[0] + item[1] + item.blockNumber}>
-                      <Address value={item[0]} ensProvider={mainnetProvider} fontSize={16} />
-                      <Balance balance={item[1]} />
-                    </List.Item>
-                  );
-                }}
+                renderItem={item => (
+                  // <List.Item key={item[0] + item[1] + item.blockNumber}>
+                  <List.Item key={item[0] + item[1]}>
+                    <Address value={item[0]} ensProvider={mainnetProvider} fontSize={16} />
+                    <Balance balance={item[1]} />
+                  </List.Item>
+                )}
               />
             </div>
 
@@ -327,16 +325,14 @@ function App() {
               name="Staker"
               signer={userProvider.getSigner()}
               provider={localProvider}
-              address={address}
-              blockExplorer={blockExplorer}
-            />
+              // address={address}
+              blockExplorer={blockExplorer} customContract={undefined} account={undefined} gasPrice={undefined} show={undefined} price={undefined}            />
             <Contract
               name="ExampleExternalContract"
               signer={userProvider.getSigner()}
               provider={localProvider}
-              address={address}
-              blockExplorer={blockExplorer}
-            />
+              // address={address}
+              blockExplorer={blockExplorer} customContract={undefined} account={undefined} gasPrice={undefined} show={undefined} price={undefined}            />
           </Route>
         </Switch>
       </BrowserRouter>
@@ -352,8 +348,7 @@ function App() {
           web3Modal={web3Modal}
           loadWeb3Modal={loadWeb3Modal}
           logoutOfWeb3Modal={logoutOfWeb3Modal}
-          blockExplorer={blockExplorer}
-        />
+          blockExplorer={blockExplorer} minimized={undefined} />
         {faucetHint}
       </div>
 
