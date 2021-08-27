@@ -46,12 +46,13 @@ export default function Contract({
   blockExplorer,
 }) {
   const contracts = useContractLoader(provider);
-  let contract;
-  if (!customContract) {
-    contract = contracts ? contracts[name] : "";
-  } else {
-    contract = customContract;
-  }
+  const contract = useMemo(() => {
+    if (!customContract) {
+      return contracts ? contracts[name] : "";
+    } else {
+      return customContract;
+    }
+  }, [customContract, contracts, name]);
 
   const address = contract ? contract.address : "";
   const contractIsDeployed = useContractExistsAtAddress(provider, address);

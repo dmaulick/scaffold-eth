@@ -343,13 +343,23 @@ function App() {
               signer={userProvider.getSigner()}
               provider={localProvider}
               // address={address}
-              blockExplorer={blockExplorer} customContract={undefined} account={undefined} gasPrice={undefined} show={undefined} price={undefined}            />
+              blockExplorer={blockExplorer}
+              customContract={undefined}
+              account={undefined}
+              gasPrice={undefined}
+              show={undefined}
+              price={undefined} />
             <Contract
               name="ExampleExternalContract"
               signer={userProvider.getSigner()}
               provider={localProvider}
               // address={address}
-              blockExplorer={blockExplorer} customContract={undefined} account={undefined} gasPrice={undefined} show={undefined} price={undefined}            />
+              blockExplorer={blockExplorer}
+              customContract={undefined}
+              account={undefined}
+              gasPrice={undefined}
+              show={undefined}
+              price={undefined} />
           </Route>
         </Switch>
       </BrowserRouter>

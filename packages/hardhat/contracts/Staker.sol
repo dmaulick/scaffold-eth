@@ -1,4 +1,5 @@
-pragma solidity >=0.6.0 <0.7.0;
+// SPDX-License-Identifier: MIT
+pragma solidity ^0.8.3;
 
 import "hardhat/console.sol";
 
@@ -20,20 +21,27 @@ contract Staker {
     ExampleExternalContract public exampleExternalContract;
 
     uint256 public constant threshold = 1 ether;
-    uint256 public deadline = now + 30 seconds;
+    uint256 public deadline;
 
     event Stake(address, uint256);
 
     mapping(address => uint256) public balances;
 
-    constructor(address exampleExternalContractAddress) public {
+    constructor(address exampleExternalContractAddress) {
+        console.log("in constructor", exampleExternalContractAddress);
         exampleExternalContract = ExampleExternalContract(
             exampleExternalContractAddress
         );
+
+        console.log("LAST", address(exampleExternalContract));
+        deadline = block.timestamp + 30 seconds;
     }
 
     modifier isBeforeDeadline() {
-        require(now < deadline, "You're too late, the it is past the deadline");
+        require(
+            block.timestamp < deadline,
+            "You're too late, the it is past the deadline"
+        );
         _;
     }
 
@@ -75,12 +83,12 @@ contract Staker {
 
     // if the `threshold` was not met, allow everyone to call a `withdraw()` function
     function withdraw() external allowWithdrawals {
-        msg.sender.transfer(balances[msg.sender]);
+        payable(msg.sender).transfer(balances[msg.sender]);
         balances[msg.sender] = 0;
     }
 
     // Add a `timeLeft()` view function that returns the time left before the deadline for the frontend
     function timeLeft() external view returns (uint256) {
-        return deadline - now;
+        return deadline - block.timestamp;
     }
 }
