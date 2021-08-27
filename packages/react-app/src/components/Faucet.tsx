@@ -1,4 +1,4 @@
-import React, { useState, useMemo } from "react";
+import React, { useState, useMemo, useCallback } from "react";
 import { Input, Button, Tooltip } from "antd";
 import Blockies from "react-blockies";
 import { SendOutlined } from "@ant-design/icons";
@@ -20,7 +20,18 @@ export default function Faucet({ localProvider, ensProvider, price }: FaucetProp
     return address ? <Blockies seed={address} size={8} scale={4} /> : <div />;
   }, [address])
 
-  const tx = useMemo(() => (Transactor({provider: localProvider})), [localProvider])
+  const transactor = useCallback((args: any) => {
+    Transactor({provider: localProvider})(args);
+  }, [localProvider]);
+
+
+  const handleSendToLocalWalletClick = useCallback(() => {
+    transactor({
+      to: address,
+      value: parseEther("0.01"),
+    });
+    setAddress("");
+  }, [])
 
   return (
     <span>
@@ -35,13 +46,7 @@ export default function Faucet({ localProvider, ensProvider, price }: FaucetProp
         suffix={
           <Tooltip title="Faucet: Send local ether to an address.">
             <Button
-              onClick={() => {
-                tx?.({
-                  to: address,
-                  value: parseEther("0.01"),
-                });
-                setAddress("");
-              }}
+              onClick={handleSendToLocalWalletClick}
               shape="circle"
               icon={<SendOutlined />}
             />

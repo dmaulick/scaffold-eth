@@ -17,7 +17,6 @@ interface useTransactorProps {
 
 export function Transactor({provider, gasPrice, etherscan}: useTransactorProps) {
   if (typeof provider !== "undefined") {
-    // eslint-disable-next-line consistent-return
     return async (tx: any) => {
       const signer = provider.getSigner();
       const network = await provider.getNetwork();
@@ -90,5 +89,7 @@ export function Transactor({provider, gasPrice, etherscan}: useTransactorProps) 
         
       }
     };
+  } else {
+    return undefined;
   }
 }
